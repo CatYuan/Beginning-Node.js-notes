@@ -9,6 +9,7 @@
   - [Prototype](#prototype)
   - [Error Handling](#error-handling)
 - [Core Node.js](#core-node.js)
+  - [File Based Module System](#file-based-module-system)
 
 ## Understanding Node.js
 
@@ -164,3 +165,69 @@ getConnection( (error, connection) => {
 ```
 
 ## Core Node.js
+
+### File Based Module System
+
+- Some points on the module system
+  - each file is its own module
+  - each file has access to the current module definition using the `module` variable
+  - the export of current modules is determined by the `module.exports` variable
+  - to import a module, use the `require` function
+- there are three types of modules in Node
+  1. file modules - imported w/ `require('./filename')`
+  2. core modules
+  3. external node_modules
+
+#### Require
+
+- node.js avoids clutter in the global namespace
+  - you must assign the result of `require` to a local varaible
+
+```
+var localVariable = require('./foo');
+```
+
+- node also lets you conditionally load a module
+
+````
+if (iNeedModule) { var foo = require('./foo');}```
+````
+
+- node.js shares state between modules
+  - if a module is modified, this change persists to all other modules that `require` it
+  - in other words, the same object is returned each time a `require` call is made
+
+```
+// foo.js
+module.exports = { something: 123 };
+
+// app.js
+var foo = require('./foo');
+console.log(foo.something); // 123
+foo.something = 456;
+var bas = require('./bar');
+
+// bar.js
+var foo = require('./foo');
+console.log(foo.something); // 456
+```
+
+- However, if you want to create a new object for each `require` call, you must export a function that returns a new object
+
+```
+// foo.js
+module.exports = () => ({something: 123});
+
+// app.js
+var foo = require('./foo');
+// creates a new object
+var obj = foo();
+```
+
+```
+// app.js
+//you can also do this in one line
+var obj = require('./foo')();
+```
+
+#### Node.js Exports
