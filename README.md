@@ -10,12 +10,13 @@
   - [Error Handling](#error-handling)
 - [Core Node.js](#core-node.js)
   - [File Based Module System](#file-based-module-system)
+  - [Important Globals](#important-globals)
 
-## Understanding Node.js
+# Understanding Node.js
 
-### Functions
+## Functions
 
-#### Immediately Executing Functions
+### Immediately Executing Functions
 
 ```
 (function foo() {
@@ -45,7 +46,7 @@ if (true) {
 console.log(foo); // 123
 ```
 
-#### Higher-Order Functions
+### Higher-Order Functions
 
 - What are they? - Functions that take functions as arguments
 
@@ -55,7 +56,7 @@ setTimeout(function () {
 }, 2000);
 ```
 
-### Closures
+## Closures
 
 - When a function is declared in another function, the inner function has access to the variables in the outer function
 
@@ -71,15 +72,15 @@ function outerFunct(arg) {
 outerFunct("Hello Closure"); // logs 'Hello Closure'
 ```
 
-### Thread Starvation
+## Thread Starvation
 
 - Node.js is single threaded event loop. A process that takes a long time to run, will hold up the event loop and make the application slow
 
-### Data Intensive Applications
+## Data Intensive Applications
 
 - Node.js is great for data-intensive applications
 
-### Truthy and Falsy
+## Truthy and Falsy
 
 - Truthy values behave like `true` and falsy values behave like `false`
   - `null`, `undefined`, `0`, and the empty string (`''`) are falsy
@@ -91,7 +92,7 @@ if (!null) {...}
 if (!undefined) {...}
 ```
 
-### Prototype
+## Prototype
 
 ```
 function foo() { };
@@ -132,7 +133,7 @@ function someClass() {
 }
 ```
 
-### Error Handling
+## Error Handling
 
 - `try`, `throw` and `catch` exceptions
 - `finally` runs whether an exception was caught or not
@@ -164,9 +165,9 @@ getConnection( (error, connection) => {
 } );
 ```
 
-## Core Node.js
+# Core Node.js
 
-### File Based Module System
+## File Based Module System
 
 - Some points on the module system
   - each file is its own module
@@ -174,11 +175,11 @@ getConnection( (error, connection) => {
   - the export of current modules is determined by the `module.exports` variable
   - to import a module, use the `require` function
 - there are three types of modules in Node
-  1. file modules - imported w/ `require('./filename')`
+  1. file modules - imported w/ `require('./filename')`, using the relative file path - (discussed below)
   2. core modules
   3. external node_modules
 
-#### Require
+### Require
 
 - node.js avoids clutter in the global namespace
   - you must assign the result of `require` to a local varaible
@@ -243,4 +244,32 @@ var obj = foo();
 var obj = require('./foo')();
 ```
 
-#### Node.js Exports
+### Node.js Exports
+
+- exporting multiple objects from one file
+  - we can also shorten `module.exports` to `exports` when exporting as shown below
+
+```
+exports.a = function() { console.log('called a') };
+exports.b = function() { console.log('called b') };
+```
+
+- you can only use `exports` to attach stuff, not assign it directly (`exports.a = 123`)
+  - directly assigning an object requires the use of `module.exports = a`
+- when you have multiple modules that go together that need to be imported, avoid repeating the import
+  - instead create a single `index.js` in `some` folder and import all the modules once and then export them from this module
+
+```
+// index.js
+exports.foo = require('./foo');
+exports.bar = require('./bar');
+exports.bas = require('./bas');
+exports.qux = require('./qux');
+
+// app.js
+var something = require('../some/index');
+something.foo();
+something.bar();
+```
+
+## Important Globals
