@@ -193,6 +193,19 @@ var localVariable = require('./foo');
 if (iNeedModule) { var foo = require('./foo');}```
 ````
 
+- there are named exports and default exports
+  - for named exports you can simply use `module.exports.someExport = ` or `exports.someExport`
+    - How this works? `module.exports` is automatically assigned to `{}`, so assigning `module.exports.someExport = 'hi';` `module.exports` essentially becomes `{someExport: 'hi'}`
+  - for default exports, you assign `module.exports = someExport` or `export default someExport`
+
+```
+const someExport = 'hi';
+export default someExport;
+/** 
+ * module.exports = {'hi'}
+**/
+```
+
 - node.js shares state between modules
   - if a module is modified, this change persists to all other modules that `require` it
   - in other words, the same object is returned each time a `require` call is made
