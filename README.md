@@ -11,6 +11,19 @@
 - [Core Node.js](#core-node.js)
   - [File Based Module System](#file-based-module-system)
   - [Important Globals](#important-globals)
+  - [Core Modules](#core-modules)
+    - [path Module](#path-module)
+    - [fs Module](#fs-module)
+    - [os Module](#os-module)
+    - [util Modules](#util-modules)
+- [Node.js Packages](#node.js-packages)
+  - [Node Modules](#node-modules)
+  - [JSON](#json)
+    - [JSON Global](#json-global)
+  - [NPM](#npm)
+    - [package.json](#package.json)
+  - [Semantic Versioning](#semantic-versioning)
+- [Global Node.js Packages](#global-node.js-packages)
 
 # Understanding Node.js
 
@@ -176,8 +189,8 @@ getConnection( (error, connection) => {
   - to import a module, use the `require` function
 - there are three types of modules in Node
   1. file modules - imported w/ `require('./filename')`, using the relative file path - (discussed below)
-  2. core modules
-  3. external node_modules
+  2. [core modules](#core-modules)
+  3. [external node_modules](#node-modules)
 
 ### Require
 
@@ -195,14 +208,14 @@ if (iNeedModule) { var foo = require('./foo');}```
 ````
 
 - there are named exports and default exports
-  - for named exports you can simply use `module.exports.someExport = ` or `exports.someExport`
+  - for named exports you can simply use `module.exports.someExport =` or `exports.someExport`
     - How this works? `module.exports` is automatically assigned to `{}`, so assigning `module.exports.someExport = 'hi';` `module.exports` essentially becomes `{someExport: 'hi'}`
   - for default exports, you assign `module.exports = someExport` or `export default someExport`
 
 ```
 const someExport = 'hi';
 export default someExport;
-/** 
+/**
  * module.exports = {'hi'}
 **/
 ```
@@ -273,3 +286,149 @@ something.bar();
 ```
 
 ## Important Globals
+
+- `__filename` and `__dirname`, these variables give you full path to the file and directory for the current module
+- `process` is used ot access command line arguments
+- `buffer` - allows the developer to interact with file systems
+
+## Core Modules
+
+- imported to a file using `require`, but you only specify the name of the module not the relative path
+
+### path Module
+
+- to load use `require('path')`
+- what does this module do? provide string transformations that are common when working with the file system
+  - why was this created? to remove inconsistencies in handling file system paths
+- some common functions of this module
+  - `path.normalize(str)` - removes duplicate slashes, and fixes slashes to be OS specific
+  - `path.join([str1], [str2], ...)` - joins strings while taking into account the OS
+  - `path.dirname`, `path.basename`, and `path.extname`
+    - these functions respectively give the directory portion of a path, the name of the file, the file extension
+
+```
+var path = require('path');
+var completePath = '/foo/bar/bas.html';
+
+console.log(path.dirname(completePath)); // logs: /foo/bar
+console.log(path.basename(completePath)); // logs: bas.html
+console.log(path.extname(completePath)); //logs: .html
+```
+
+### fs module
+
+- provides access to the filesystem
+- used to write, read, delete, rename files
+- fs has both async and sync functions
+
+### os module
+
+- provides basic operating system related utility functions and properties
+
+### util Module
+
+- contains general purpose functions
+- `util.log` allows you to log something to console w/ a timestamp
+- `util.format` allows you to print statements with placeholders
+  - common placeholders are `%s` and `%d`
+
+```
+var util = require('util');
+var name = 'nate';
+var money = 33;
+
+console.log(util.format("%s has %d dollars", name, money));
+//prints "nate has 33 dollars
+```
+
+- you can also check if something is of a specific type
+  - `isArray`, `isDate`, `isError`
+
+# Node.js Packages
+
+## Node modules
+
+- How does node go about looking for node_modules?
+
+  - if we `require('bar')`, the order Node.js scans the file system is in the following order
+    - `/home/cat/project/node_modules/bar.js`
+    - `/home/cat/node_modules/bar.js`
+    - `/home/node_modules/bar.js`
+    - `/node_modules/bar.js`
+
+- For folder based modules, we require the folder bar - `require('./bar');`
+  - then node will look for an `index.js` file within that folder and return that as the module file
+
+```
+// bar/bar1.js
+module.exports = function() { console.log('bar1 called'); }
+
+// bar/bar2.js
+module.exports = function() { console.log('bar2 called'); }
+
+// bar/index.js
+exports.bar1 = require('./bar1');
+exports.bar2 = require('./bar2');
+
+// foo.js
+var bar = require('./bar');
+bar.bar1(); // logs "bar1 called"
+bar.bar2(); // logs "bar2 called"
+```
+
+- When loading node_modules - `require('bar')` - if `bar` is a folder w/in `node_modules`, node still looks for an index.js file w/in `/bar/`
+
+- Some advantages of using node modules over file-based modules
+  - simplify long file relative paths
+  - increases reusability - you can reuse modules between projects
+  - decreases side effects
+    - you can create a `node_modules` folder w/in any module and place needed submodules there, so it does not interfere w/ other modules
+
+## JSON
+
+- w/in the scope of node.js, JSON can be considered a subset of JS object literals
+- the purpose of JSON in javaScript? - it restricts what JS object literals are alid
+- Some restrictions
+  - JS object keys must be surrounded by ""
+    \_ ex: `var foo = {'for': 0}`
+  - JS object values must be a string, number, boolean, array, null, or another VALID JSON object
+  - the last property must not have an extra comma
+- loading JSON in node.js
+  - w/ each `require` if node cannot find a .js file, it will look for a .json file
+  - so you can load json files the same way you load modules
+
+### JSON Global
+
+- there is a global object in JavaScript called JSON
+  - it provides utility functions for converting string representation of JSON to JS objects and vice verca
+    - `JSON.stringify(someJSObject)` - returns JSON string
+    - `JSON.parse(someJSONString)` - returns a js object
+
+## NPM
+
+### package.json
+
+- to create this file run `npm init`
+- when you install an npm package you can add the package as a dependency in `package.json` using the `--save` flag
+  - ex: `npm install underscore --save`
+- you should exclude `node_modules` from your source control (ie. git) b/c you can retrieve a copy of all dependencies w/ `npm install`
+- you can remove a dependency using `npm rm`
+  - `npm rm <dependencyName> --save` will also remove the dependency from the `package.json`
+
+## Semantic Versioning
+
+- this means versioning your software in a way that the version numbers have significant meaning
+  - Convention follows a three digit versioning scheme - X.Y.Z
+    - X is the major version, Y the minor version, Z the patch version
+  - patch versions are incremented if backward compatible fixes are introduced
+  - minor versions are incremented if backward compatible new features are introduced
+  - major versions are incremented if backward incompatible fixes/features/changes are introduced
+- semantic versioning in npm
+  - ~ indicates you are ok w/ all patch versions of 1.0 - `~1.0.0`
+  - ^ indicates you are ok w/ any minor versions of 1 - `^1.0.0`
+  - - can be used at various locations to match any number
+    * `1.0.*` == `~1.0.0`
+    * `1.*` == `^1.0.0`
+- to update dependencies in your project and `package.json` you can run `npm update -save`
+
+## Global Node.js Packages

@@ -1,0 +1,19 @@
+{
+  "name": "beginning-node.js-notes",
+  "version": "1.0.0",
+  "description": "Notes and examples from the Beginning Node.js book",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CatYuan/Beginning-Node.js-notes.git"
+  },
+  "author": "catyuan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/CatYuan/Beginning-Node.js-notes/issues"
+  },
+  "homepage": "https://github.com/CatYuan/Beginning-Node.js-notes#readme"
+}
