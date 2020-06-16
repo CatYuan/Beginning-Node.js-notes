@@ -23,7 +23,13 @@
   - [NPM](#npm)
     - [package.json](#package.json)
   - [Semantic Versioning](#semantic-versioning)
-- [Global Node.js Packages](#global-node.js-packages)
+  - [Global Node.js Packages](#global-node.js-packages)
+  - [Package.json and require](#package.json-and-require)
+  - [Popular Node.js Packages](#popular-node.js-packages)
+- [Events and Streams](#events-and-streams)
+  - [Classical Inheritance](#Classical-Inheritance)
+  - [Node.js Events](#node.js-events)
+  - [Streams](#streams)
 
 # Understanding Node.js
 
@@ -432,3 +438,30 @@ bar.bar2(); // logs "bar2 called"
 - to update dependencies in your project and `package.json` you can run `npm update -save`
 
 ## Global Node.js Packages
+
+- modules installed globally are not meant to be used w/ a `require` function call in your code
+
+## Package.json and require
+
+- you can redirect `require` to load a different file from a folder instead of the default `index.js` using the `package.json`
+  - done by using the `main` property - in the package.json it would look like
+
+```
+{
+  "main": "./lib/main.js"
+}
+```
+
+- this means if you `require('foo')`, node looks in `foo/lib/main.js`
+
+## Popular Node.js Packages
+
+- check in `/popular` folder for popular packages
+
+# Events and Streams
+
+## Classical Inheritance
+
+## Node.js events
+
+## Streams

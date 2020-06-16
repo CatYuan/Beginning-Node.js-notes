@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/CatYuan/Beginning-Node.js-notes/issues"
   },
-  "homepage": "https://github.com/CatYuan/Beginning-Node.js-notes#readme"
+  "homepage": "https://github.com/CatYuan/Beginning-Node.js-notes#readme",
+  "dependencies": {
+    "moment": "^2.26.0",
+    "optimist": "^0.6.1",
+    "underscore": "^1.10.2"
+  }
 }
