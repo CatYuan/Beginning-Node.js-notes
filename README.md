@@ -28,6 +28,12 @@
   - [Popular Node.js Packages](#popular-node.js-packages)
 - [Events and Streams](#events-and-streams)
   - [Classical Inheritance](#Classical-Inheritance)
+    - [Arriving at an Inheritance Pattern](#arriving-at-an-inheritance-pattern)
+    - [The Constructor Property](#the-constructor-property)
+    - [The Proper Node.js Way](#the-proper-node.js-way)
+    - [Overriding Functions in Child Classes](#overriding-functions-in-child-classes)
+    - [Checking Inheritance Chain](#Checking-inheritance-chain)
+    - [Internals of uitl.inherits](#internals-of-util.inherits)
   - [Node.js Events](#node.js-events)
   - [Streams](#streams)
 
@@ -461,6 +467,36 @@ bar.bar2(); // logs "bar2 called"
 # Events and Streams
 
 ## Classical Inheritance
+
+### Arriving at an inheritance pattern
+
+- to inherit a class, we need to inherit the parent class's functunality in the new class; we need to do the following:
+  1. Call the Parent constructor from the Child constructor
+  2. make all parent prototype members a member of the child's prototype's prototype (setting up the prototype chain)
+     - `child._proto_._proto_.someFunction` where someFunction is `parent._proto_.someFunction`
+
+1. Calling the Parent constructor
+
+- we use the `call()` function b/c it forces the `this` keyword to be the first parameter of the function
+- if this function was not used, the `this` of the parent constructor would not refer to the Child instance
+
+```
+function Bird(name) {
+  Animal.call(this, name); // calling the constructor for Animal
+}
+```
+
+2. Setting up the Prototype chain
+
+### The Constructor Property
+
+### The Proper Node.js Way
+
+### Overriding Functions in Child Classes
+
+### Checking Inheritance Chain
+
+### Internals of uitl.inherits
 
 ## Node.js events
 
