@@ -29,12 +29,13 @@
 - [Events and Streams](#events-and-streams)
   - [Classical Inheritance](#Classical-Inheritance)
     - [Arriving at an Inheritance Pattern](#arriving-at-an-inheritance-pattern)
-    - [The Constructor Property](#the-constructor-property)
     - [The Proper Node.js Way](#the-proper-node.js-way)
     - [Overriding Functions in Child Classes](#overriding-functions-in-child-classes)
-    - [Checking Inheritance Chain](#Checking-inheritance-chain)
-    - [Internals of uitl.inherits](#internals-of-util.inherits)
   - [Node.js Events](#node.js-events)
+    - [EventEmitter Class](#eventemitter-class)
+      - [Error Event](#error-event)
+    - [Creating your Own Event Emitters](#creating-your-own-event-emitters)
+    - [Process Events](#process-events)
   - [Streams](#streams)
 
 # Understanding Node.js
@@ -488,16 +489,160 @@ function Bird(name) {
 
 2. Setting up the Prototype chain
 
-### The Constructor Property
+- to set up a prototype chain means to allow the child object access to the parent's functions
+- this is done by setting `Child.prototype._proto_ = Parent.prototype`
+
+```
+function Animal(name) { this.name = name; }
+Animal.prototype.walk = function(destination) {
+  console.log(this.name, 'is walking to ', destination);
+};
+
+function Bird(name) {
+  Animal.bind(this, name); // calling the parent constructor
+}
+Bird.prototype._proto_ = Animal.prototype; // setting up the prototype chain
+Bird.prototype.fly = function(destination) {
+  console.log(this.name, 'is flying to', destination);
+};
+
+// creating an instance of a Bird object
+let bird = new Bird('sparrow');
+bird.walk('sydney'); // 'sparrow is walking to sydney'
+bird.fly('sydney'); // 'sparrow is flying to sydney'
+```
+
+- every function gets a `prototype` member.
+  - Every `prototype` has a `constructor` property that points to the function itself
 
 ### The Proper Node.js Way
 
+- However, manually modifying `_proto_` is not recommended, we can achieve this same result using the `util` library
+- `util` has a function called `inherits(childClass, parentClass)`
+
+```
+var util = require('util');
+
+function Bird(name) {
+  Animal.bind(this, name); // calling the parent constructor
+  // additional construction code
+}
+util.inherits(Bird, Animal); // setting up prototype chain
+Bird.prototype.fly = (destination) => (console.log(this.name, 'flying to', destination););
+
+var bird = new Bird('sparrow');
+bird.walk('sydney'); // sparrow walking to sydney
+bird.fly('sydney'); // sparrow flying to sydney
+```
+
+- with the inheritance chain setup, you can check if a particular object instance is of a particular class or its parent class using the `instanceof` keyword
+
 ### Overriding Functions in Child Classes
 
-### Checking Inheritance Chain
+- to override functions of the parent class, but still use some of the original functionality, do the following
+  1. Create a function on the child `prototype` with the same name
+  2. call the parent function using the `call(this, original args)`
 
-### Internals of uitl.inherits
+```
+var inherits = require('util').inherits;
+
+function Base() { this.message = 'message'; };
+Base.prototype.foo = () => (this.message + 'base foo');
+
+function Child() { Base.call(this); };
+inherits(Child, Base);
+
+// overridig parent behavior
+Child.prototype.foo = function() {
+  return Base.prototype.foo.call(this) + 'child foo';
+}
+
+// testing
+var child = new Child()
+console.log(child.foo()) // 'message base foo child foo'
+```
 
 ## Node.js events
+
+### EventEmitter Class
+
+- node has support for events in the core module `events`
+  - `require('events')`
+  - the events module has one class `EventEmitter`
+- the purpose of EventEmitter class: to emit events and subscribe to raised events
+
+```
+// to subscribe to an event
+emitter.on('eventName',
+    function handleEvent(arg1, arg2, ...) { /** do something **/});
+```
+
+- the handleEvent function is also called a **listener**
+
+```
+// to raise/emit an event
+emitter.emit('eventName', {arg1: 123}, {arg2: 456});
+```
+
+- when you have multiple subscribers to an event, they are called in the order that they are registered
+- arguments passed in for the event are shared between subscribers as well
+- to unsubscribe from an event use the `removeListener` function
+  - you must pass in a reference to the function you want to remove to the `removeListener` - this means your listeners should not be anonymous functions
+
+```
+// example removing a listener
+var EventEmitter = require('events').EventEmitter;
+
+var emitter = new EventEmitter();
+var fooHandler = () => {
+  console.log('handler called');
+
+  // removes the listener after it has been called once
+  emitter.removeListener('foo', fooHandler);
+}
+
+// emit twice
+emitter.emit('foo'); // prints 'handler called'
+emitter.emit('foo'); // event is unnoticed
+```
+
+- EventEmitter provides a `once` function that calls the registered listener only once
+  - this simplifies the above code example
+
+```
+const EventEmitter = require('events').EventEmitter;
+const emitter = new EventEmitter();
+
+emitter.once('foo', function() {
+  console.log('foo has been raised');
+})
+
+emitter.emit('foo'); // foo has been raised
+emitter.emit('foo'); //event is unnoticed
+```
+
+- EventEmitters has a `listeners('eventName')` function that returns all listeners subscribed to that event
+- EventEmitter also raises a `newListener` and `removeListener` event on the subscription or unsubscribtion of a listener
+- EventEmitter allows up to 10 listeners for each event type
+  - Issues ussually appear when people add listeners in a callback and forget to unsubscribe
+    - Solution: create a new event emitter in the callback. The event emitter and the listeners will be disposed after the callback terminates
+
+#### Error Event
+
+- the `error` event is a special condition. The code will print a stack trace and exit if this event does not have a listener
+
+```
+const EventEmitter = require('event').EventEmitter;
+const emitter = new EventEmitter()
+
+emitter.emit('error', new Error('Some error message')); // the code exits here
+console.log('this line never executes');
+```
+
+- when to raise an `error` event? - in cercumstances where an `error` event **must** be handled.
+
+### Creating your Own Event Emitters
+
+### Process Events
 
 ## Streams
