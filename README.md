@@ -34,9 +34,11 @@
   - [Node.js Events](#node.js-events)
     - [EventEmitter Class](#eventemitter-class)
       - [Error Event](#error-event)
-    - [Creating your Own Event Emitters](#creating-your-own-event-emitters)
-    - [Process Events](#process-events)
   - [Streams](#streams)
+    - [Pipe](#pipe)
+    - [Consuming Readable Streams](#consuming-readable-streams)
+    - [Writing to Writable Streams](#writing-to-writable-streams)
+    - [Creating Your Own Stream](#creating-your-own-stream)
 
 # Understanding Node.js
 
@@ -641,8 +643,12 @@ console.log('this line never executes');
 
 - when to raise an `error` event? - in cercumstances where an `error` event **must** be handled.
 
-### Creating your Own Event Emitters
-
-### Process Events
-
 ## Streams
+
+### Pipe
+
+### Consuming Readable Streams
+
+### Writing to Writable Streams
+
+### Creating Your Own Stream
