@@ -35,10 +35,12 @@
     - [EventEmitter Class](#eventemitter-class)
       - [Error Event](#error-event)
   - [Streams](#streams)
-    - [Pipe](#pipe)
-    - [Consuming Readable Streams](#consuming-readable-streams)
-    - [Writing to Writable Streams](#writing-to-writable-streams)
-    - [Creating Your Own Stream](#creating-your-own-stream)
+- [Getting Started With HTTP](#getting-started-with-http)
+  - [Basics of node.js HTTP](#basics-of-node.js-http)
+    - [Response Stream](#response-stream)
+    - [Request Stream](#request-stream)
+  - [Introducing Connect](#introducing-connect)
+  - [HTTPS](#https)
 
 # Understanding Node.js
 
@@ -645,10 +647,147 @@ console.log('this line never executes');
 
 ## Streams
 
-### Pipe
+- node.js has a stream module - `require('stream')`
+- from this module you can create Readable, Writable, Duplex and Transform streams
+  - `Duplex` streams are both readable and writeable
+  - `Transform` streams are a special case of duplex streams where the output is computed from the input
+- All streams are based on `Events`
+- `pipe` function supported by all streams - feed output of a readable stream to a writeable stream
+  - what is happening with the `pipe` operation? - `pipe` subscribes to the relevant events on the source and calls the relevant functions on the destination
+- Readable streams - the most important event is `readable`
+  - this event is raised when there is new data to be read from the stream
+  - you can call `read` function on the stream to read data from the stream. At the end of the stream, `read` returns `null`
 
-### Consuming Readable Streams
+```
+process.stdin.on('readable', function() {
+  var buf = process.stdin.read();
+  if (buf != null) {
+    console.log("Got: ");
+    process.stdout.write(buf.toString());
+  } else {
+    console.log("Read complete!");
+  }
+});
+```
 
-### Writing to Writable Streams
+- Writable streams - call `write` on the stream to write data
+  - when you have finished writing, call `end`
 
-### Creating Your Own Stream
+```
+// writing 'foo bar bas' to message.txt
+var fs = require('fs');
+var ws = fs.createWriteStream('message.txt');
+
+ws.write('foo bar');
+ws.end('bas');
+```
+
+- when creating your own stream, be sure to inherit from the relevant base class
+  - call parent constructors
+  - set up prototype chain
+  - also overwrite any necessary methods
+    - `_read`
+    - `_write`
+    - `_transform`
+    - `_flush`
+
+```
+var Readable = require('stream').Readable;
+var util = require('util');
+
+function Counter() {
+  Readable.call(this);
+  this._max = 1000;
+  this._index = 1;
+}
+util.inherits(Counter, Readable);
+
+Counter.prototype._read = function() {
+  var i = this._index++;
+  if (i > this._max)
+    this.push(null);
+  else {
+    var str = ' ' + i;
+    this.push(str);
+  }
+}
+```
+
+# Getting Started with HTTP
+
+## Basics of node.js HTTP
+
+- creating a server (that serves static files) from scratch w/ HTTP
+- `http` module has a `createServer` function that takes a callback and returns an HTTP server
+  - the callback is passed the incoming request stream and an outgoing server response stream
+  - to start the HTTP server, call the `listen` function
+
+```
+var http = require('http');
+
+var server = http.createServer((req, res) => {
+  console.log('request starting...');
+
+  //respond
+  response.write('hello client');
+  response.end();
+});
+
+server.listen(3000);
+console.log('Server running at http://127.0.0.1:3000/');
+```
+
+- the request stream has several headers that can be accessed via `req['header-name']`
+
+```
+// the headers
+{
+  host: '127.0.0.1:3000',
+  'user-agent': curl/7.30.0',
+  accept: '*/*',
+  connection: 'Keep-Alive'
+}
+```
+
+- you can use a `debugging proxy` to help explore http. A debugging proxy logs all the requests and responses between the server and the client
+
+### Response Stream
+
+- response is split into two sections: header and body
+  - the body may have large chunks of data that need streaming
+  - the headers specify how the data is going to be presented and needs to be interpreted
+  - after you run `response.write` or `response.end` the headers are no longer modifiable. `response.headersSent` returns a boolean
+- set the status code using `response.statusCode = 404`
+- set headers using `response.setHeader(name, value)
+  - a common header is `Content-Type`
+    - commmon values (aka mime type) for `Content-Type` header includes
+      1. text/html
+      2. text/css
+      3. application/javascript
+      4. application/json
+      5. image/jpeg
+      6. image/png
+    - npm package `mime` also returns mime types given a file extension
+      - ex: `mime.lookup('/path/to/file.txt')`
+- remove header from the queue using `response.removeHeader('name')`
+- to explicitly send headers (not queue them) and move the response into body only mode, use `response.writeHead()`
+
+### Request Stream
+
+- this is also a readable stream, useful for streaming data to server (ex: file upload)
+- split into head and body part
+- to create RESTful web apps, you need...
+  1. HTTP method - retrieved from `request.method`
+  2. URL used by client - retrieved from `request.url`
+
+## Introducing Connect
+
+- Connect is a popular middleware web framework that provides essential features for building your own web app
+- what is middleware? - software that sits between your application code and some low level API
+- the `connect` function creates the connect dispatcher
+  - which is a function that takes request/response qrguments
+- w/o middleware to handle the client request, connect will automatically return a 404
+  - check `http/connect/no-middleware.js` for server w/o middleware
+  - use the `use` function to register middleware with connect
+
+## HTTPS
