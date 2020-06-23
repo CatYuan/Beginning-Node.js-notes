@@ -41,6 +41,13 @@
     - [Request Stream](#request-stream)
   - [Introducing Connect](#introducing-connect)
   - [HTTPS](#https)
+- [Introducing Express](#introducing-express)
+  - [Basics of Express](#basics-of-express)
+  - [Popular Connect/ExpressJS Middleware](#popular-middleware)
+  - [Express Response Object](#express-response-object)
+  - [Express Request Object](#express-request-object)
+  - [Understanding REST](#understanding-rest)
+  - [Express Application Routes](#express-application-routes)
 
 # Understanding Node.js
 
@@ -788,6 +795,58 @@ console.log('Server running at http://127.0.0.1:3000/');
   - which is a function that takes request/response qrguments
 - w/o middleware to handle the client request, connect will automatically return a 404
   - check `http/connect/no-middleware.js` for server w/o middleware
-  - use the `use` function to register middleware with connect
+  - use the `use` function to register middleware with connect - which takes a function with 3 parameters
+    1. request, the HTTP request
+    2. response, the HTTP response
+    3. a callback - allows you to pass the control onto the next middleware or inform connect about an error
+  - the use function takes an optional first argument that specify the endpoint for whcih the middleware will be triggered - this is called mounting
+    - mounting allows for easy change of URLs w/o updating the middleware
+- Example: Verifying requests/restricting access
+  - a basic authroization middleware returns 401 not authorized if the client request does not have the correct credentials
+  - every client request should contain an `Authorization` header, and should be constructed as follows
+    - username and password are combined as "username:password"
+    - this is encoded using Base 64
+    - the authorization method and a space ("Basic") is then put before the encoded string
+    - on rejecting a client, the server should send a `WWW-Authenticate` header in the response
+- there is an optional argument that you can pass to `next` which informs connect that an error occurred
+  - this sends a client request w/ status code 500 (internal server error) and prevents other middlewares from being called
+  - providing a middleware that takes `error, req, res, next` as paramters will allow you to catch and deal with the error.
+    - this middleware is called only when there is an error
+
+```
+connect().use((req, res, next) {
+    next(new Error('some error message'));
+  })
+  .use((err, req, res, next) => {
+    console.log('Error handled:', err.message);
+    console.log('Stacktrace:', err.stack);
+    res.writeHead(500);
+    res.end('Unable to process the request');
+  })
+  .listen(3000);
+```
+
+- `next` can be called from your error handler middleware to pass control to any other middleware in the chain.
 
 ## HTTPS
+
+- HTTPS is made possible b/c **public-key encryption**, for this you need two cryptography keys
+  1. a public key that everyone knows - used for encryption
+  2. a private key that only you know - needed for decryption
+- a session key is generated (each session) for the client and server to talk. This is the SSL handshake
+  - after the handshake, the standarad HTTP conversation takes place, but it is encrypted using the session key.
+- you can generate public/private key pairs using OpenSSL
+
+# Introduceing Express
+
+## Basics of Express
+
+## Popular Middleware
+
+## Express Response Object
+
+## Express Request Object
+
+## Understanding REST
+
+## Express Application Routes
