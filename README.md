@@ -837,7 +837,7 @@ connect().use((req, res, next) {
   - after the handshake, the standarad HTTP conversation takes place, but it is encrypted using the session key.
 - you can generate public/private key pairs using OpenSSL
 
-# Introduceing Express
+# Introducing Express
 
 ## Basics of Express
 
