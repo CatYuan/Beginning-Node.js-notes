@@ -42,7 +42,6 @@
   - [Introducing Connect](#introducing-connect)
   - [HTTPS](#https)
 - [Introducing Express](#introducing-express)
-  - [Basics of Express](#basics-of-express)
   - [Popular Connect/ExpressJS Middleware](#popular-middleware)
   - [Express Response Object](#express-response-object)
   - [Express Request Object](#express-request-object)
@@ -839,9 +838,50 @@ connect().use((req, res, next) {
 
 # Introducing Express
 
-## Basics of Express
+- express is similar to connect in its usage of `use` and `error handling middleware`
 
 ## Popular Middleware
+
+- serving static pages: `serve-static` middleware
+  - benefits of using the `serve-static` middleware
+    - the middleware automatically sets the proper mime type of the response
+    - automatically sends proper response/error codes
+    - restricts access to files above the directory you want to serve
+    - automatically serves `index.html` from a directory if the path resolves to a directory
+      - using the `__dirname`, ensures the path is always relative to the current file
+  - express ships with `express.static` which is an alias to `serve-static`
+
+```
+const express = require('express');
+const serveStatic = require('serve-static');
+
+const app = express()
+  .use(serveStatic(__dirname + '/public'))
+  .listen(3000);
+```
+
+- listing directory contents: `serve-index` middleware
+- JSON requests and HTML Form inputs: `body-parser` middleware
+
+  - body parsing is parsing a string based client request body into a JS object
+  - what can the `body-parser` middleware do?
+    - parses the request body into a JS object if the `content-type` is JSON or HTML form
+    - puts the JS object in req.body for easy access in later middleware
+  - similarly, `express.json()` is an alias for `body-parser`
+
+```
+const express = require('express');
+const bodyParser = require('body-parser');
+
+express().use(bodyParser())
+  .use((req, res, next) => {
+    // req.body now stores JS objects
+  })
+  .listen(3000);
+```
+
+- Handling cookies. What is a cookie? some data sent from the web server and stored in the web browser
+  - set a cookie using `response.cookie(cookieName, value, [options])`
 
 ## Express Response Object
 
