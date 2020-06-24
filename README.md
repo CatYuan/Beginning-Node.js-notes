@@ -43,6 +43,7 @@
   - [HTTPS](#https)
 - [Introducing Express](#introducing-express)
   - [Popular Connect/ExpressJS Middleware](#popular-middleware)
+    - [Cookies](#cookies)
   - [Express Response Object](#express-response-object)
   - [Express Request Object](#express-request-object)
   - [Understanding REST](#understanding-rest)
@@ -880,8 +881,18 @@ express().use(bodyParser())
   .listen(3000);
 ```
 
-- Handling cookies. What is a cookie? some data sent from the web server and stored in the web browser
-  - set a cookie using `response.cookie(cookieName, value, [options])`
+### Cookies
+
+- What is a cookie? some data sent from the web server and stored in the web browser
+- set a cookie using `response.cookie(cookieName, value, [options])`
+- after a cookie is set, the client will return the cookie in the header of the request.
+  - we can then parse this into a JS object using `cookie-parser` - this middleware will populate the parsed cookies into the `req.cookies` object
+  - to clear client cookies in a server response use `response.clearCookie(cookieName, [options])`
+- the client can manually forge cookies. We can use `cookie-parser` middleware to detect this, by digitally signing the cookies placed by the server.
+  - a digital signature assures the authenticity of a piece of data
+  - digital signatures use a secret key which we can set by passing it to the `cookie-parser` creation function (`use(cookieParser('optional secret string'))`)
+  - then to set the cookie call `res.cookie(name, value, {signed:true})`
+  - to read siged cookies use `req.signedCookies`
 
 ## Express Response Object
 
