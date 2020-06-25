@@ -893,6 +893,20 @@ express().use(bodyParser())
   - digital signatures use a secret key which we can set by passing it to the `cookie-parser` creation function (`use(cookieParser('optional secret string'))`)
   - then to set the cookie call `res.cookie(name, value, {signed:true})`
   - to read siged cookies use `req.signedCookies`
+- httpOnly and secure - the user's browser JS can read the cookie for the current web page. This is a security issue
+  - to prevent JS access to cookies, set `httpOnly` to `true` (`res.cookie(name, value, {httpOnly:true})`)
+  - to make sure the server sends cookies only over HTTPS use `{secure:true}`
+- set cookie expiry - w/o cookie expiry, the cookie is only cleared after the browser is closed ('browser session cookie')
+  - set expiry by passing `maxAge: numMiliSecs` to setCookie
+  - `res.cookie('foo', 'bar', {maxAge:9000, httpOnly:true, secure:true})`
+
+### Time Out Hanging Requests
+
+- a middleware may fail to end the request and fail to call next. When would this happen? in waiting for a response from a database server
+  - how to solve this? time out the client using `connect-timeout` middleware - takes one parameter, the number of miliseconds to wait before timeout
+- you can add an error handling middleware to check if the timeout occurred by checking `req.timedout`
+- sleeping middleware? - middleware that suddenly awakens and calls next (a database request that took longer than expected but eventually succeeded)
+  - how to solve this? - check the `req.timedout` and prevent the middleware from going futher. use utility functions (`haltOnTimedout`) in the chain
 
 ## Express Response Object
 
