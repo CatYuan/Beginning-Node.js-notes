@@ -44,10 +44,19 @@
 - [Introducing Express](#introducing-express)
   - [Popular Connect/ExpressJS Middleware](#popular-middleware)
     - [Cookies](#cookies)
+    - [Time Out Hanging Requests]](#time-out-hanging-requests)
   - [Express Response Object](#express-response-object)
   - [Express Request Object](#express-request-object)
+    - [URL Handling](#url-handling)
   - [Understanding REST](#understanding-rest)
   - [Express Application Routes](#express-application-routes)
+- [Persisting Data](#persisting-data)
+  - [Introduction to NoSQL](#introduction-to-nosql)
+  - [Important MongoDB Concepts](#important-mongodb-concepts)
+  - [MongoDB Using Node.js](#mongodb-using-node.js)
+  - [Mongoose ODM](#mongoose-odm)
+  - [Using MongoDB as Distributed Session Store](#using-mongodb-as-distributed-session-store)
+  - [Managing MongoDB](#managing-mongodb)
 
 # Understanding Node.js
 
@@ -910,8 +919,130 @@ express().use(bodyParser())
 
 ## Express Response Object
 
+below are some functions of the express response object
+
+- `res.status` - sets the `res.statusCode` and is chainable
+  - ex: `res.status(200).end('Hello World');`
+- `res.set` - sets individual or multiple response headers
+
+```
+// setting indiv. header
+res.set({'content-type', 'text/plain'});
+
+// setting multiple headers
+res.set({
+  'content-type':'text/plain',
+  'content-length':'123',
+  'ETag':'12345'
+})
+```
+
+- `res.get` - gets a queued header, and is case insensitive
+- `res.type` - function that takes either the `content-type` or looks up the content-type based on a file extention
+  - ex: `res.type('.html')` is equivalent to `res.type('text/html')`
+- `res.redirect([status], url)` - redirects to the given url with default status code 302 FOUND
+  - the url provided can be absolute, relative to site root, or relative to current URL
+- `res.send([body|status], [body])` - allows you to send header and body as one, instead of making two calls
+  - if you send a JS object as JSON, it will automatically set the header for you.
+    - ex: `res.send({ some: 'json' });`
+  - if you just send a known status code, it will automatically set the body for you
+    - ex: `res.send(200)` automatically reads OK on the browser
+
 ## Express Request Object
+
+below are some functions of the express request object
+
+- `req.get` - function provides access to the request headers and is case insensitive
+  - ex: `req.get('content-type')` is equivalent to `req.get('Content-Type')`
+- `req.is(type)` - allows you to look up the content-type, returs a boolean
+  - ex: `req.is('json')` returns true or false
+- `req.secure` - checks if the request was over HTTPS
+
+### URL Handling
+
+- express parses query params from the URL into `req.query`
+- similarly, `req.path` returns the path
+
+```
+// GET /shoes?order=desc&shoe[color=blue]
+req.query.order; // "desc"
+req.query.shoe.color; // "blue"
+
+// GET /users?sort=desc
+req.path; // "/users"
+```
+
+- when your middleware is mounted, express will provide only the relevant portion when you use `req.url`
+- to get the full url use `req.originalUrl`
+
+```
+const express = require('express');
+
+express()
+  .use('/home', (req, res, next) => {
+    console.log(req.url); // GET /home => "/"
+    next();
+  })
+  .use((req, res, next) => {
+    console.log(req.url); // GET /home => "/home"
+    next();
+  })
+  .listen(3000);
+```
 
 ## Understanding REST
 
+- REST is an architectural style specifying how connected components in a distributed Hypermedia system should behave.
+- there are two kinds of URLS in REST
+  1. URLs that point to collections (http://example.com/resources)
+  2. URLs that point to individual items in a collection (http://example.com/resources/item5)
+
+listed below are the HTTP methods and the purpose of each method in REST
+
+1. for collections
+   - GET - get the summarized details fo the members of the collections, including unique identifiers
+   - PUT - replace the entire collection w/ a new collection
+   - POST - add a new item in the collection
+   - DELETE - delete the entire collection
+2. for items
+   - GET - get the details of the item
+   - PUT - replace the item
+   - POST - treats the item as a collection and adds a new sub-item
+   - DELETE - delete the item
+
+- In HTTP, you cannot have a request body in GET and DELETE methods
+- you should put new item details in the body of the PUT and POST messages
+
 ## Express Application Routes
+
+- express provides verb+URL based routing support
+  - you can call `app.get / app.put / app.post / app.delete`
+  - `app.VERB(path, [callback...],callback)` to register a middleware chain that is only called when the path + HTTP verb in the client request matches.
+  - you can also call `app.all` to register a middleware that is called whenever thepath matches (irrespective of the HTTP verb)
+  - example of this in `./express/routes/verbs`
+- you can simplify this, instead of calling `app.VERB`, you can use the `route` object to specify the path and then call each verb
+  - example of this in `./express/routes/route`
+- verb based routing in ExpressJS matches the **exact path**
+  - if you want to match a path prefix, use `*` to match anything after the prefix
+  - you can also use regular expressions
+- parameter based routing - you can specify path parameters `/path/:param`, and Express populates the `param` for you
+  - parameters are stored in the `req.params` object
+  - example in `./express/routes/param`
+- express router object - is an isolated instance of middleware + routes - `express.Router()`
+  - it has access to `use` and all VERB methods
+  - it can be registered with Express using `app.use`
+  - example in `./express/routes/router`
+
+# Persisting Data
+
+## Introduction to NoSQL
+
+## Important MongoDB Concepts
+
+## MongoDB Using Node.js
+
+## Mongoose ODM
+
+## Using MongoDB as Distributed Session Store
+
+## Managing MongoDB
