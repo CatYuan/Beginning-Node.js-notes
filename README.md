@@ -1037,6 +1037,29 @@ listed below are the HTTP methods and the purpose of each method in REST
 
 ## Introduction to NoSQL
 
+- NoSQL (Not only SQL) is the new generation of database servers. Built to replace relational databases (SQL). They can be placed into 4 categories
+
+  1. Documant databases (MongoDB)
+  2. Key value databases (Redis)
+  3. Column-family databases (Cassandra)
+  4. Graph databases (Neo4j)
+
+- Document database - works based on the concept of documents (a self contained piece of information for a particular entity)
+- key value store - is a stripped down version of a document database
+
+  - how is it different? in document database, you can query contents, but in key value store, only keys can be queryed
+
+- Some terminology
+  - Availability - is the data accessible? can the users read and act on it
+  - Consistency - is there only a single source of truth?
+    - on the web you must partition your servers (b/c one server cannot handle all requests), so the partitions must communicate with each other in order to maintain a consistent view of the data
+  - Partition Tolerance - the system continues to operate in the face of a communication disruption between the partitions
+    - this means you must favor availability over consistency
+    - one solution is to shard, by making the different servers self-containable
+- Scaling issues with relational databases - relationships make sharding difficult
+- Object relational mapping (ORM) - manipulating the data in relational databases from our applications involves ORM, converting the 'tables' into 'objects' and vice versa
+  - this can be avoided using a document database
+
 ## Important MongoDB Concepts
 
 ## MongoDB Using Node.js
